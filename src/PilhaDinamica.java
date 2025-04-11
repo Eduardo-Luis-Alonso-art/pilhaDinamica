@@ -1,8 +1,3 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
-
 public class PilhaDinamica implements IEstruturaDinamica {
     private No topo;
     private int tamanho;
@@ -14,182 +9,160 @@ public class PilhaDinamica implements IEstruturaDinamica {
 
     @Override
     public void inserirElemento(Object elemento) {
-        Scanner scanner = new Scanner(System.in);
-        Integer valorInteiro = null;
-
-        while (true) {
+        Integer valor = converterParaInteiro(elemento);
+        while (valor == null) {
+            System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO.");
+            System.out.print("DIGITE UM NÚMERO INTEIRO: ");
             try {
-                if (elemento instanceof Integer) {
-                    valorInteiro = (Integer) elemento;
-                }
-                else if (elemento instanceof String) {
-                    valorInteiro = Integer.parseInt((String) elemento);
-                }
-                else if (elemento instanceof Number) {
-                    valorInteiro = ((Number) elemento).intValue();
-                }
-
-                if (valorInteiro != null) {
-                    No novoNo = new No(valorInteiro);
-                    novoNo.setProx(topo);
-                    topo = novoNo;
-                    tamanho++;
-                    return;
-                }
-                else {
-                    throw new NumberFormatException();
-                }
-            }
-            catch (NumberFormatException e) {
-                System.out.println("O ELEMENTO DEVE SER UM NÚMERO INTEIRO");
-                System.out.print("DIGITE UM NÚMERO INTEIRO: ");
-                elemento = scanner.nextLine();
-            }
+                String entrada = new java.util.Scanner(System.in).nextLine();
+                valor = converterParaInteiro(entrada);
+            } catch (Exception ignored) {}
         }
+
+        No novoNo = new No(valor);
+        novoNo.setProx(topo);
+        topo = novoNo;
+        tamanho++;
     }
 
     @Override
-    public void inserirSequencia(Object elementos) {
-        if (elementos instanceof Object[]) {
-            Object[] seq = (Object[]) elementos;
-            for (Object elemento : seq) {
-                inserirElemento(elemento);
-            }
+    public void inserirSequencia(Object[] elementos) {
+        if (elementos == null) return;
+        for (Object elemento : elementos) {
+            inserirElemento(elemento);
         }
     }
 
     @Override
     public boolean removerElemento(Object elemento) {
-        if (topo == null) {
-            System.out.println("A PILHA ESTÁ VAZIA, NÃO É POSSÍVEL REMOVER ELEMENTOS");
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
             return false;
         }
 
-        Integer elementoInt = null;
-        try {
-            if (elemento instanceof Integer) {
-                elementoInt = (Integer) elemento;
-            }
-            else if (elemento instanceof String) {
-                elementoInt = Integer.parseInt((String) elemento);
-            }
-            else if (elemento instanceof Number) {
-                elementoInt = ((Number) elemento).intValue();
-            }
-        } catch (Exception e) {
-            System.out.println("O ELEMENTO DEVE SER UM NÚMERO INTEIRO");
+        Integer alvo = converterParaInteiro(elemento);
+        if (alvo == null) {
+            System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO.");
             return false;
         }
 
-        if (elementoInt != null && elementoInt.equals(topo.getConteudo())) {
-            System.out.println("REMOVENDO O TOPO: " + topo.getConteudo());
-            topo = topo.getProx();
-            tamanho--;
-            return true;
+        No anterior = null;
+        No atual = topo;
+
+        while (atual != null) {
+            if (alvo.equals(atual.getConteudo())) {
+                if (anterior == null) {
+                    topo = topo.getProx();
+                } else {
+                    anterior.setProx(atual.getProx());
+                }
+                tamanho--;
+                System.out.println("O NÚMERO " + alvo + " FOI REMOVIDO.");
+                return true;
+            }
+
+            anterior = atual;
+            atual = atual.getProx();
         }
 
-        System.out.println("SÓ É POSSÍVEL REMOVER O TOPO(" + topo.getConteudo() + ")");
+        System.out.println("O NÚMERO " + alvo + " NÃO FOI ENCONTRADO NA PILHA.");
         return false;
     }
 
     @Override
-    public void removerSequencia(Object elementos) {
-        if (elementos == null) {
-            System.out.println("A SEQUÊNCIA FORNECIDA É NULA");
+    public void removerSequencia(Object[] elementos) {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
             return;
         }
 
-        Object[] seq = elementos instanceof Object[] ? (Object[]) elementos : new Object[0];
-        if (seq.length == 0) {
-            System.out.println(elementos instanceof Object[] ? "Sequência vazia fornecida." : "Tipo de sequência inválido.");
+        if (elementos == null || elementos.length == 0) {
+            System.out.println("SEQUÊNCIA NULA OU VAZIA FORNECIDA.");
             return;
         }
 
-        Integer[] numerosParaRemover = new Integer[seq.length];
-        try {
-            for (int i = 0; i < seq.length; i++) {
-                numerosParaRemover[i] = seq[i] instanceof Integer ? (Integer) seq[i] :
-                        seq[i] instanceof String ? Integer.parseInt((String) seq[i]) :
-                                seq[i] instanceof Number ? ((Number) seq[i]).intValue() : null;
-                if (numerosParaRemover[i] == null) throw new NumberFormatException();
+        PilhaDinamica aux = new PilhaDinamica();
+        int removidos = 0;
+
+        // Flag para controlar os números que foram removidos (apenas uma vez)
+        boolean[] removidosFlags = new boolean[elementos.length];
+
+        while (!estaVazia()) {
+            Integer atual = (Integer) topo.getConteudo();
+            topo = topo.getProx();
+            tamanho--;
+
+            boolean encontrado = false;
+
+            // Verifica se o elemento atual está na sequência e ainda não foi removido
+            for (int i = 0; i < elementos.length; i++) {
+                Integer alvo = converterParaInteiro(elementos[i]);
+                if (alvo != null && alvo.equals(atual) && !removidosFlags[i]) {
+                    removidos++;
+                    removidosFlags[i] = true; // Marca o número como removido
+                    encontrado = true;
+                    break; // Remove apenas a primeira ocorrência do número
+                }
             }
-        } catch (NumberFormatException e) {
-            System.out.println("OS ELEMENTOS DA SEQUÊNCIA NÃO SÃO NÚMEROS INTEIROS VÁLIDOS");
-            return;
-        }
 
-        PilhaDinamica pilhaAuxiliar = new PilhaDinamica();
-        int totalRemovidos = 0;
-
-        while (!this.estaVazia()) {
-            Integer valorAtual = (Integer) this.topo.getConteudo();
-            this.topo = this.topo.getProx();
-            this.tamanho--;
-
-            if (Arrays.asList(numerosParaRemover).contains(valorAtual)) {
-                totalRemovidos++;
-            } else {
-                pilhaAuxiliar.inserirElemento(valorAtual);
+            // Se não encontrou o número, coloca ele na pilha auxiliar
+            if (!encontrado) {
+                // Inserção manual sem mensagem
+                No novoNo = new No(atual);
+                novoNo.setProx(aux.topo);
+                aux.topo = novoNo;
+                aux.tamanho++;
             }
         }
 
-        while (!pilhaAuxiliar.estaVazia()) {
-            this.inserirElemento(pilhaAuxiliar.topo.getConteudo());
-            pilhaAuxiliar.topo = pilhaAuxiliar.topo.getProx();
-            pilhaAuxiliar.tamanho--;
+        // Recoloca os elementos que não foram removidos de volta na pilha original
+        while (!aux.estaVazia()) {
+            No noAux = aux.topo;
+            aux.topo = aux.topo.getProx();
+            noAux.setProx(topo);
+            topo = noAux;
+            aux.tamanho--;
+            tamanho++;
         }
 
-        System.out.println("A SOMA DOS ELEMENTOS REMOVIDOS É: " + totalRemovidos);
+        System.out.println("A SOMA DE NÚMEROS REMOVIDOS É DE: " + removidos + " NÚMEROS.");
     }
 
     @Override
     public void removerTodasOcorrencias(Object elemento) {
-        if (topo == null) {
-            System.out.println("A PILHA ESTÁ VAZIA");
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
             return;
         }
 
-        Integer numeroProcurado;
-        try {
-            if (elemento instanceof Integer) {
-                numeroProcurado = (Integer) elemento;
-            } else if (elemento instanceof String) {
-                numeroProcurado = Integer.parseInt((String) elemento);
-            } else if (elemento instanceof Number) {
-                numeroProcurado = ((Number) elemento).intValue();
-            } else {
-                System.out.println("O ELEMENTO DEVE SER UM NÚMERO INTEIRO VÁLIDO");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("O ELEMENTO DEVE SER UM NÚMERO INTEIRO VÁLIDO");
+        Integer alvo = converterParaInteiro(elemento);
+        if (alvo == null) {
+            System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO VÁLIDO.");
             return;
         }
 
-        PilhaDinamica pilhaAuxiliar = new PilhaDinamica();
-        int contadorRemocoes = 0;
+        PilhaDinamica aux = new PilhaDinamica();
+        int contador = 0;
 
-        while (!this.estaVazia()) {
-            Integer valorAtual = (Integer) this.topo.getConteudo();
-            this.topo = this.topo.getProx();
-            this.tamanho--;
+        while (!estaVazia()) {
+            Integer atual = (Integer) topo.getConteudo();
+            topo = topo.getProx();
+            tamanho--;
 
-            if (!valorAtual.equals(numeroProcurado)) {
-                pilhaAuxiliar.inserirElemento(valorAtual);
+            if (!atual.equals(alvo)) {
+                aux.inserirElemento(atual);
             } else {
-                contadorRemocoes++;
+                contador++;
             }
         }
 
-        while (!pilhaAuxiliar.estaVazia()) {
-            Integer valorAtual = (Integer) pilhaAuxiliar.topo.getConteudo();
-            pilhaAuxiliar.topo = pilhaAuxiliar.topo.getProx();
-            pilhaAuxiliar.tamanho--;
-
-            this.inserirElemento(valorAtual);
+        while (!aux.estaVazia()) {
+            inserirElemento(aux.topo.getConteudo());
+            aux.topo = aux.topo.getProx();
+            aux.tamanho--;
         }
 
-        System.out.println("FORAM REMOVIDAS " + contadorRemocoes + " OCORRÊNCIAS DO NÚMERO " + numeroProcurado);
+        System.out.println("FORAM REMOVIDAS " + contador + " OCORRÊNCIAS DO NÚMERO " + alvo + ".");
     }
 
     @Override
@@ -199,88 +172,104 @@ public class PilhaDinamica implements IEstruturaDinamica {
 
     @Override
     public boolean buscarElemento(Object elemento) {
-        if (elemento == null) {
-            return false;
-        }
-
-        Integer numeroProcurado;
-        try {
-            if (elemento instanceof Integer) {
-                numeroProcurado = (Integer) elemento;
-            } else if (elemento instanceof String) {
-                numeroProcurado = Integer.parseInt((String) elemento);
-            } else if (elemento instanceof Number) {
-                numeroProcurado = ((Number) elemento).intValue();
-            } else {
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        Integer alvo = converterParaInteiro(elemento);
+        if (alvo == null) return false;
 
         No atual = topo;
         while (atual != null) {
-            Integer valorAtual = (Integer) atual.getConteudo();
-            if (valorAtual.equals(numeroProcurado)) {
-                return true;
-            }
+            if (alvo.equals(atual.getConteudo())) return true;
             atual = atual.getProx();
         }
-
         return false;
     }
 
     @Override
     public void ordenarCrescente() {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }else{
+            System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
+        }
+
+        // Não há uso de Collections, apenas manipulação manual
         if (topo == null || topo.getProx() == null) return;
 
-        List<Integer> lista = new ArrayList<>();
-        No atual = topo;
-        while (atual != null) {
-            lista.add((Integer) atual.getConteudo());
-            atual = atual.getProx();
-        }
+        PilhaDinamica aux = new PilhaDinamica();
+        while (!estaVazia()) {
+            Integer valor = (Integer) topo.getConteudo();
+            topo = topo.getProx();
+            tamanho--;
 
-        for (int i = 1; i < lista.size(); i++) {
-            int chave = lista.get(i);
-            int j = i - 1;
-            while (j >= 0 && lista.get(j) > chave) {
-                lista.set(j + 1, lista.get(j));
-                j--;
+            // Inserção ordenada na pilha auxiliar
+            No temp = aux.topo;
+            No anterior = null;
+
+            while (temp != null && valor > (Integer) temp.getConteudo()) {
+                anterior = temp;
+                temp = temp.getProx();
             }
-            lista.set(j + 1, chave);
+
+            No novoNo = new No(valor);
+            if (anterior == null) {
+                novoNo.setProx(aux.topo);
+                aux.topo = novoNo;
+            } else {
+                novoNo.setProx(temp);
+                anterior.setProx(novoNo);
+            }
         }
 
-        limpar();
-        for (int i = lista.size() - 1; i >= 0; i--) {
-            inserirElemento(lista.get(i));
+        // Recolocando os elementos da pilha auxiliar de volta na pilha original
+        while (!aux.estaVazia()) {
+            inserirElemento(aux.topo.getConteudo());
+            aux.topo = aux.topo.getProx();
+            aux.tamanho--;
         }
     }
 
     @Override
     public void ordenarDecrescente() {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }else{
+            System.out.println("PILHA ORDENADA EM ORDEM DECRESCENTE.");
+        }
+
+        // Implementação similar ao crescente, mas invertendo a comparação
         if (topo == null || topo.getProx() == null) return;
 
-        List<Integer> lista = new ArrayList<>();
-        No atual = topo;
-        while (atual != null) {
-            lista.add((Integer) atual.getConteudo());
-            atual = atual.getProx();
-        }
+        PilhaDinamica aux = new PilhaDinamica();
+        while (!estaVazia()) {
+            Integer valor = (Integer) topo.getConteudo();
+            topo = topo.getProx();
+            tamanho--;
 
-        for (int i = 1; i < lista.size(); i++) {
-            int chave = lista.get(i);
-            int j = i - 1;
-            while (j >= 0 && lista.get(j) < chave) {
-                lista.set(j + 1, lista.get(j));
-                j--;
+            // Inserção ordenada decrescente na pilha auxiliar
+            No temp = aux.topo;
+            No anterior = null;
+
+            while (temp != null && valor < (Integer) temp.getConteudo()) {
+                anterior = temp;
+                temp = temp.getProx();
             }
-            lista.set(j + 1, chave);
+
+            No novoNo = new No(valor);
+            if (anterior == null) {
+                novoNo.setProx(aux.topo);
+                aux.topo = novoNo;
+            } else {
+                novoNo.setProx(temp);
+                anterior.setProx(novoNo);
+            }
         }
 
-        limpar();
-        for (int i = lista.size() - 1; i >= 0; i--) {
-            inserirElemento(lista.get(i));
+        // Recolocando os elementos da pilha auxiliar de volta na pilha original
+        while (!aux.estaVazia()) {
+            inserirElemento(aux.topo.getConteudo());
+            aux.topo = aux.topo.getProx();
+            aux.tamanho--;
         }
     }
 
@@ -290,43 +279,17 @@ public class PilhaDinamica implements IEstruturaDinamica {
     }
 
     @Override
-    public void editarElemento(Object elementoAntigo, Object elementoNovo) {
-        if (elementoAntigo == null || elementoNovo == null) {
-            System.out.println("OS ELEMENTOS NÃO PODEM SER NULOS");
+    public void editarElemento(Object antigo, Object novoValor) {
+        if (antigo == null || novoValor == null) {
+            System.out.println("OS NÚMEROS NÃO PODEM SER NULOS.");
             return;
         }
 
-        Integer valorAntigo;
-        try {
-            if (elementoAntigo instanceof Integer) {
-                valorAntigo = (Integer) elementoAntigo;
-            } else if (elementoAntigo instanceof String) {
-                valorAntigo = Integer.parseInt((String) elementoAntigo);
-            } else if (elementoAntigo instanceof Number) {
-                valorAntigo = ((Number) elementoAntigo).intValue();
-            } else {
-                System.out.println("O ELEMENTO ANTIGO NÃO É UM NÚMERO INTEIRO VÁLIDO");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("O ELEMENTO ANTIGO NÃO É UM NÚMERO INTEIRO VÁLIDO");
-            return;
-        }
+        Integer velho = converterParaInteiro(antigo);
+        Integer novoInt = converterParaInteiro(novoValor);
 
-        Integer valorNovo;
-        try {
-            if (elementoNovo instanceof Integer) {
-                valorNovo = (Integer) elementoNovo;
-            } else if (elementoNovo instanceof String) {
-                valorNovo = Integer.parseInt((String) elementoNovo);
-            } else if (elementoNovo instanceof Number) {
-                valorNovo = ((Number) elementoNovo).intValue();
-            } else {
-                System.out.println("O ELEMENTO NOVO NÃO É UM NÚMERO INTEIRO VÁLIDO");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("O ELEMENTO NOVO NÃO É UM NÚMERO INTEIRO VÁLIDO");
+        if (velho == null || novoInt == null) {
+            System.out.println("NÚMERO INVÁLIDO PARA EDITAR.");
             return;
         }
 
@@ -334,29 +297,40 @@ public class PilhaDinamica implements IEstruturaDinamica {
         boolean encontrado = false;
 
         while (atual != null) {
-            Integer valorAtual = (Integer) atual.getConteudo();
-            if (valorAtual.equals(valorAntigo)) {
-                atual.setConteudo(valorNovo);
+            if (velho.equals(atual.getConteudo())) {
+                atual.setConteudo(novoInt);
                 encontrado = true;
             }
             atual = atual.getProx();
         }
 
         if (encontrado) {
-            System.out.println("O NÚMERO " + valorAntigo + " FOI SUBSTITUIDO POR " + valorNovo);
+            System.out.println("O NÚMERO " + velho + " FOI SUBSTITUIDO POR " + novoInt + ".");
         } else {
-            System.out.println("O NÚMERO " + valorAntigo + " NÃO FOI ENCONTRADO NA PILHA");
+            System.out.println("O NÚMERO " + velho + " NÃO FOI ENCONTRADO NA PILHA.");
         }
     }
 
     @Override
     public void limpar() {
-        topo = null;
-        tamanho = 0;
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }else {
+            System.out.println("A PILHA FOI LIMPA.");
+            topo = null;
+            tamanho = 0;
+        }
     }
 
     @Override
     public void exibir() {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }
+
+        System.out.println("MOSTRANDO LISTA:");
         No atual = topo;
         while (atual != null) {
             System.out.println(atual.getConteudo());
@@ -376,5 +350,13 @@ public class PilhaDinamica implements IEstruturaDinamica {
             atual = atual.getProx();
         }
         return atual;
+    }
+
+    private Integer converterParaInteiro(Object obj) {
+        try {
+            return Integer.parseInt(obj.toString());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

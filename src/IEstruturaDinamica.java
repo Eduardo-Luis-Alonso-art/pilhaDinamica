@@ -1,9 +1,9 @@
 public interface IEstruturaDinamica {
 
     void inserirElemento(Object elemento);
-    void inserirSequencia(Object elementos);
+    void inserirSequencia(Object[] elementos);
     boolean removerElemento(Object elemento);
-    void removerSequencia(Object elementos);
+    void removerSequencia(Object[] elementos);
     void removerTodasOcorrencias(Object elemento);
     boolean estaVazia();
     boolean buscarElemento(Object elemento);
