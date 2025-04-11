@@ -46,22 +46,28 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return false;
         }
 
-        No anterior = null;
         No atual = topo;
 
         while (atual != null) {
             if (alvo.equals(atual.getConteudo())) {
-                if (anterior == null) {
-                    topo = topo.getProx();
+                if (atual == topo) {
+                    topo = atual.getProx();
+                    if (topo != null) {
+                        topo.setAnterior(null);
+                    }
                 } else {
-                    anterior.setProx(atual.getProx());
+                    if (atual.getAnterior() != null) {
+                        atual.getAnterior().setProx(atual.getProx());
+                    }
+                    if (atual.getProx() != null) {
+                        atual.getProx().setAnterior(atual.getAnterior());
+                    }
                 }
+
                 tamanho--;
                 System.out.println("O NÚMERO " + alvo + " FOI REMOVIDO.");
                 return true;
             }
-
-            anterior = atual;
             atual = atual.getProx();
         }
 
@@ -84,7 +90,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
         PilhaDinamica aux = new PilhaDinamica();
         int removidos = 0;
 
-        // Flag para controlar os números que foram removidos (apenas uma vez)
         boolean[] removidosFlags = new boolean[elementos.length];
 
         while (!estaVazia()) {
@@ -94,20 +99,17 @@ public class PilhaDinamica implements IEstruturaDinamica {
 
             boolean encontrado = false;
 
-            // Verifica se o elemento atual está na sequência e ainda não foi removido
             for (int i = 0; i < elementos.length; i++) {
                 Integer alvo = converterParaInteiro(elementos[i]);
                 if (alvo != null && alvo.equals(atual) && !removidosFlags[i]) {
                     removidos++;
-                    removidosFlags[i] = true; // Marca o número como removido
+                    removidosFlags[i] = true;
                     encontrado = true;
-                    break; // Remove apenas a primeira ocorrência do número
+                    break;
                 }
             }
 
-            // Se não encontrou o número, coloca ele na pilha auxiliar
             if (!encontrado) {
-                // Inserção manual sem mensagem
                 No novoNo = new No(atual);
                 novoNo.setProx(aux.topo);
                 aux.topo = novoNo;
@@ -115,7 +117,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             }
         }
 
-        // Recoloca os elementos que não foram removidos de volta na pilha original
         while (!aux.estaVazia()) {
             No noAux = aux.topo;
             aux.topo = aux.topo.getProx();
@@ -192,7 +193,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
         }
 
-        // Não há uso de Collections, apenas manipulação manual
         if (topo == null || topo.getProx() == null) return;
 
         PilhaDinamica aux = new PilhaDinamica();
@@ -201,7 +201,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             topo = topo.getProx();
             tamanho--;
 
-            // Inserção ordenada na pilha auxiliar
             No temp = aux.topo;
             No anterior = null;
 
@@ -220,7 +219,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             }
         }
 
-        // Recolocando os elementos da pilha auxiliar de volta na pilha original
         while (!aux.estaVazia()) {
             inserirElemento(aux.topo.getConteudo());
             aux.topo = aux.topo.getProx();
@@ -237,7 +235,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             System.out.println("PILHA ORDENADA EM ORDEM DECRESCENTE.");
         }
 
-        // Implementação similar ao crescente, mas invertendo a comparação
         if (topo == null || topo.getProx() == null) return;
 
         PilhaDinamica aux = new PilhaDinamica();
@@ -246,7 +243,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             topo = topo.getProx();
             tamanho--;
 
-            // Inserção ordenada decrescente na pilha auxiliar
             No temp = aux.topo;
             No anterior = null;
 
@@ -265,7 +261,6 @@ public class PilhaDinamica implements IEstruturaDinamica {
             }
         }
 
-        // Recolocando os elementos da pilha auxiliar de volta na pilha original
         while (!aux.estaVazia()) {
             inserirElemento(aux.topo.getConteudo());
             aux.topo = aux.topo.getProx();
