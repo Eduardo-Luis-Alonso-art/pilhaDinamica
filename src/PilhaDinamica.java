@@ -1,28 +1,31 @@
 public class PilhaDinamica implements IEstruturaDinamica {
-    private No topo;
-    private int tamanho;
+    private No noTopo;
+    private int quantidadeElementos;
 
     public PilhaDinamica() {
-        topo = null;
-        tamanho = 0;
+        noTopo = null;
+        quantidadeElementos = 0;
     }
 
     @Override
     public void inserirElemento(Object elemento) {
-        Integer valor = converterParaInteiro(elemento);
-        while (valor == null) {
+        Integer valorInformado = converterParaInteiro(elemento);
+        while (valorInformado == null) {
             System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO.");
             System.out.print("DIGITE UM NÚMERO INTEIRO: ");
             try {
                 String entrada = new java.util.Scanner(System.in).nextLine();
-                valor = converterParaInteiro(entrada);
+                valorInformado = converterParaInteiro(entrada);
             } catch (Exception ignored) {}
         }
 
-        No novoNo = new No(valor);
-        novoNo.setProx(topo);
-        topo = novoNo;
-        tamanho++;
+        No noNovo = new No(valorInformado);
+        noNovo.setProx(noTopo);
+        if (noTopo != null) {
+            noTopo.setAnterior(noNovo);
+        }
+        noTopo = noNovo;
+        quantidadeElementos++;
     }
 
     @Override
@@ -40,38 +43,38 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return false;
         }
 
-        Integer alvo = converterParaInteiro(elemento);
-        if (alvo == null) {
+        Integer valorProcurado = converterParaInteiro(elemento);
+        if (valorProcurado == null) {
             System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO.");
             return false;
         }
 
-        No atual = topo;
+        No noAtual = noTopo;
 
-        while (atual != null) {
-            if (alvo.equals(atual.getConteudo())) {
-                if (atual == topo) {
-                    topo = atual.getProx();
-                    if (topo != null) {
-                        topo.setAnterior(null);
+        while (noAtual != null) {
+            if (valorProcurado.equals(noAtual.getConteudo())) {
+                if (noAtual == noTopo) {
+                    noTopo = noAtual.getProx();
+                    if (noTopo != null) {
+                        noTopo.setAnterior(null);
                     }
                 } else {
-                    if (atual.getAnterior() != null) {
-                        atual.getAnterior().setProx(atual.getProx());
+                    if (noAtual.getAnterior() != null) {
+                        noAtual.getAnterior().setProx(noAtual.getProx());
                     }
-                    if (atual.getProx() != null) {
-                        atual.getProx().setAnterior(atual.getAnterior());
+                    if (noAtual.getProx() != null) {
+                        noAtual.getProx().setAnterior(noAtual.getAnterior());
                     }
                 }
 
-                tamanho--;
-                System.out.println("O NÚMERO " + alvo + " FOI REMOVIDO.");
+                quantidadeElementos--;
+                System.out.println("O NÚMERO " + valorProcurado + " FOI REMOVIDO.");
                 return true;
             }
-            atual = atual.getProx();
+            noAtual = noAtual.getProx();
         }
 
-        System.out.println("O NÚMERO " + alvo + " NÃO FOI ENCONTRADO NA PILHA.");
+        System.out.println("O NÚMERO " + valorProcurado + " NÃO FOI ENCONTRADO NA PILHA.");
         return false;
     }
 
@@ -87,46 +90,46 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return;
         }
 
-        PilhaDinamica aux = new PilhaDinamica();
-        int removidos = 0;
+        PilhaDinamica pilhaAux = new PilhaDinamica();
+        int contadorElementosRemovidos = 0;
 
-        boolean[] removidosFlags = new boolean[elementos.length];
+        boolean[] elementosRemovidos = new boolean[elementos.length];
 
         while (!estaVazia()) {
-            Integer atual = (Integer) topo.getConteudo();
-            topo = topo.getProx();
-            tamanho--;
+            Integer valorAtual = (Integer) noTopo.getConteudo();
+            noTopo = noTopo.getProx();
+            quantidadeElementos--;
 
             boolean encontrado = false;
 
             for (int i = 0; i < elementos.length; i++) {
-                Integer alvo = converterParaInteiro(elementos[i]);
-                if (alvo != null && alvo.equals(atual) && !removidosFlags[i]) {
-                    removidos++;
-                    removidosFlags[i] = true;
+                Integer valorProcurado = converterParaInteiro(elementos[i]);
+                if (valorProcurado != null && valorProcurado.equals(valorAtual) && !elementosRemovidos[i]) {
+                    contadorElementosRemovidos++;
+                    elementosRemovidos[i] = true;
                     encontrado = true;
                     break;
                 }
             }
 
             if (!encontrado) {
-                No novoNo = new No(atual);
-                novoNo.setProx(aux.topo);
-                aux.topo = novoNo;
-                aux.tamanho++;
+                No novoNo = new No(valorAtual);
+                novoNo.setProx(pilhaAux.noTopo);
+                pilhaAux.noTopo = novoNo;
+                pilhaAux.quantidadeElementos++;
             }
         }
 
-        while (!aux.estaVazia()) {
-            No noAux = aux.topo;
-            aux.topo = aux.topo.getProx();
-            noAux.setProx(topo);
-            topo = noAux;
-            aux.tamanho--;
-            tamanho++;
+        while (!pilhaAux.estaVazia()) {
+            No noAux = pilhaAux.noTopo;
+            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
+            noAux.setProx(noTopo);
+            noTopo = noAux;
+            pilhaAux.quantidadeElementos--;
+            quantidadeElementos++;
         }
 
-        System.out.println("A SOMA DE NÚMEROS REMOVIDOS É DE: " + removidos + " NÚMEROS.");
+        System.out.println("A SOMA DE NÚMEROS REMOVIDOS É DE: " + contadorElementosRemovidos + " NÚMEROS.");  // Usando nome solicitado
     }
 
     @Override
@@ -136,94 +139,52 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return;
         }
 
-        Integer alvo = converterParaInteiro(elemento);
-        if (alvo == null) {
+        Integer valorProcurado = converterParaInteiro(elemento);
+        if (valorProcurado == null) {
             System.out.println("O NÚMERO DEVE SER UM NÚMERO INTEIRO VÁLIDO.");
             return;
         }
 
-        PilhaDinamica aux = new PilhaDinamica();
-        int contador = 0;
+        PilhaDinamica pilhaAux = new PilhaDinamica();
+        int quantidadeRemovida = 0;
 
         while (!estaVazia()) {
-            Integer atual = (Integer) topo.getConteudo();
-            topo = topo.getProx();
-            tamanho--;
+            Integer noAtualValor = (Integer) noTopo.getConteudo();
+            noTopo = noTopo.getProx();
+            quantidadeElementos--;
 
-            if (!atual.equals(alvo)) {
-                aux.inserirElemento(atual);
+            if (!noAtualValor.equals(valorProcurado)) {
+                pilhaAux.inserirElemento(noAtualValor);
             } else {
-                contador++;
+                quantidadeRemovida++;
             }
         }
 
-        while (!aux.estaVazia()) {
-            inserirElemento(aux.topo.getConteudo());
-            aux.topo = aux.topo.getProx();
-            aux.tamanho--;
+        while (!pilhaAux.estaVazia()) {
+            inserirElemento(pilhaAux.noTopo.getConteudo());
+            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
+            pilhaAux.quantidadeElementos--;
         }
 
-        System.out.println("FORAM REMOVIDAS " + contador + " OCORRÊNCIAS DO NÚMERO " + alvo + ".");
+        System.out.println("FORAM REMOVIDAS " + quantidadeRemovida + " OCORRÊNCIAS DO NÚMERO " + valorProcurado + ".");
     }
 
     @Override
     public boolean estaVazia() {
-        return topo == null;
+        return noTopo == null;
     }
 
     @Override
     public boolean buscarElemento(Object elemento) {
-        Integer alvo = converterParaInteiro(elemento);
-        if (alvo == null) return false;
+        Integer valorProcurado = converterParaInteiro(elemento);
+        if (valorProcurado == null) return false;
 
-        No atual = topo;
-        while (atual != null) {
-            if (alvo.equals(atual.getConteudo())) return true;
-            atual = atual.getProx();
+        No noAtual = noTopo;
+        while (noAtual != null) {
+            if (valorProcurado.equals(noAtual.getConteudo())) return true;
+            noAtual = noAtual.getProx();
         }
         return false;
-    }
-
-    @Override
-    public void ordenarCrescente() {
-        if (estaVazia()) {
-            System.out.println("A PILHA ESTÁ VAZIA.");
-            return;
-        }else{
-            System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
-        }
-
-        if (topo == null || topo.getProx() == null) return;
-
-        PilhaDinamica aux = new PilhaDinamica();
-        while (!estaVazia()) {
-            Integer valor = (Integer) topo.getConteudo();
-            topo = topo.getProx();
-            tamanho--;
-
-            No temp = aux.topo;
-            No anterior = null;
-
-            while (temp != null && valor > (Integer) temp.getConteudo()) {
-                anterior = temp;
-                temp = temp.getProx();
-            }
-
-            No novoNo = new No(valor);
-            if (anterior == null) {
-                novoNo.setProx(aux.topo);
-                aux.topo = novoNo;
-            } else {
-                novoNo.setProx(temp);
-                anterior.setProx(novoNo);
-            }
-        }
-
-        while (!aux.estaVazia()) {
-            inserirElemento(aux.topo.getConteudo());
-            aux.topo = aux.topo.getProx();
-            aux.tamanho--;
-        }
     }
 
     @Override
@@ -232,45 +193,87 @@ public class PilhaDinamica implements IEstruturaDinamica {
             System.out.println("A PILHA ESTÁ VAZIA.");
             return;
         }else{
+            System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
+        }
+
+        if (noTopo == null || noTopo.getProx() == null) return;
+
+        PilhaDinamica pilhaAux = new PilhaDinamica();
+        while (!estaVazia()) {
+            Integer valorInformado = (Integer) noTopo.getConteudo();
+            noTopo = noTopo.getProx();
+            quantidadeElementos--;
+
+            No verificandoNo = pilhaAux.noTopo;
+            No noAnterior = null;
+
+            while (verificandoNo != null && valorInformado > (Integer) verificandoNo.getConteudo()) {
+                noAnterior = verificandoNo;
+                verificandoNo = verificandoNo.getProx();
+            }
+
+            No noNovo = new No(valorInformado);
+            if (noAnterior == null) {
+                noNovo.setProx(pilhaAux.noTopo);
+                pilhaAux.noTopo = noNovo;
+            } else {
+                noNovo.setProx(verificandoNo);
+                noAnterior.setProx(noNovo);
+            }
+        }
+
+        while (!pilhaAux.estaVazia()) {
+            inserirElemento(pilhaAux.noTopo.getConteudo());
+            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
+            pilhaAux.quantidadeElementos--;
+        }
+    }
+
+    @Override
+    public void ordenarCrescente() {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }else{
             System.out.println("PILHA ORDENADA EM ORDEM DECRESCENTE.");
         }
 
-        if (topo == null || topo.getProx() == null) return;
+        if (noTopo == null || noTopo.getProx() == null) return;
 
-        PilhaDinamica aux = new PilhaDinamica();
+        PilhaDinamica pilhaAux = new PilhaDinamica();
         while (!estaVazia()) {
-            Integer valor = (Integer) topo.getConteudo();
-            topo = topo.getProx();
-            tamanho--;
+            Integer valorInformado = (Integer) noTopo.getConteudo();
+            noTopo = noTopo.getProx();
+            quantidadeElementos--;
 
-            No temp = aux.topo;
-            No anterior = null;
+            No verificandoNo = pilhaAux.noTopo;
+            No noAnterior = null;
 
-            while (temp != null && valor < (Integer) temp.getConteudo()) {
-                anterior = temp;
-                temp = temp.getProx();
+            while (verificandoNo != null && valorInformado < (Integer) verificandoNo.getConteudo()) {
+                noAnterior = verificandoNo;
+                verificandoNo = verificandoNo.getProx();
             }
 
-            No novoNo = new No(valor);
-            if (anterior == null) {
-                novoNo.setProx(aux.topo);
-                aux.topo = novoNo;
+            No noNovo = new No(valorInformado);
+            if (noAnterior == null) {
+                noNovo.setProx(pilhaAux.noTopo);
+                pilhaAux.noTopo = noNovo;
             } else {
-                novoNo.setProx(temp);
-                anterior.setProx(novoNo);
+                noNovo.setProx(verificandoNo);
+                noAnterior.setProx(noNovo);
             }
         }
 
-        while (!aux.estaVazia()) {
-            inserirElemento(aux.topo.getConteudo());
-            aux.topo = aux.topo.getProx();
-            aux.tamanho--;
+        while (!pilhaAux.estaVazia()) {
+            inserirElemento(pilhaAux.noTopo.getConteudo());
+            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
+            pilhaAux.quantidadeElementos--;
         }
     }
 
     @Override
     public int quantidadeElementos() {
-        return tamanho;
+        return quantidadeElementos;
     }
 
     @Override
@@ -280,29 +283,29 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return;
         }
 
-        Integer velho = converterParaInteiro(antigo);
-        Integer novoInt = converterParaInteiro(novoValor);
+        Integer valorAntigo = converterParaInteiro(antigo);
+        Integer valorNo = converterParaInteiro(novoValor);
 
-        if (velho == null || novoInt == null) {
+        if (valorAntigo == null || valorNo == null) {
             System.out.println("NÚMERO INVÁLIDO PARA EDITAR.");
             return;
         }
 
-        No atual = topo;
+        No noAtual = noTopo;
         boolean encontrado = false;
 
-        while (atual != null) {
-            if (velho.equals(atual.getConteudo())) {
-                atual.setConteudo(novoInt);
+        while (noAtual != null) {
+            if (valorAntigo.equals(noAtual.getConteudo())) {
+                noAtual.setConteudo(valorNo);
                 encontrado = true;
             }
-            atual = atual.getProx();
+            noAtual = noAtual.getProx();
         }
 
         if (encontrado) {
-            System.out.println("O NÚMERO " + velho + " FOI SUBSTITUIDO POR " + novoInt + ".");
+            System.out.println("O NÚMERO " + valorAntigo + " FOI SUBSTITUIDO POR " + valorNo + ".");
         } else {
-            System.out.println("O NÚMERO " + velho + " NÃO FOI ENCONTRADO NA PILHA.");
+            System.out.println("O NÚMERO " + valorAntigo + " NÃO FOI ENCONTRADO NA PILHA.");
         }
     }
 
@@ -313,8 +316,8 @@ public class PilhaDinamica implements IEstruturaDinamica {
             return;
         }else {
             System.out.println("A PILHA FOI LIMPA.");
-            topo = null;
-            tamanho = 0;
+            noTopo = null;
+            quantidadeElementos = 0;
         }
     }
 
@@ -326,25 +329,25 @@ public class PilhaDinamica implements IEstruturaDinamica {
         }
 
         System.out.println("MOSTRANDO LISTA:");
-        No atual = topo;
-        while (atual != null) {
-            System.out.println(atual.getConteudo());
-            atual = atual.getProx();
+        No noAtual = noTopo;
+        while (noAtual != null) {
+            System.out.println(noAtual.getConteudo());
+            noAtual = noAtual.getProx();
         }
     }
 
     @Override
     public No obterPrimeiroElemento() {
-        return topo;
+        return noTopo;
     }
 
     @Override
     public No obterUltimoElemento() {
-        No atual = topo;
-        while (atual != null && atual.getProx() != null) {
-            atual = atual.getProx();
+        No noAtual = noTopo;
+        while (noAtual != null && noAtual.getProx() != null) {
+            noAtual = noAtual.getProx();
         }
-        return atual;
+        return noAtual;
     }
 
     private Integer converterParaInteiro(Object obj) {
