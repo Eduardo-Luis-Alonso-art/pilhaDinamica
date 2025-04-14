@@ -170,21 +170,46 @@ public class PilhaDinamica implements IEstruturaDinamica {
     }
 
     @Override
-    public boolean estaVazia() {
-        return noTopo == null;
-    }
-
-    @Override
-    public boolean buscarElemento(Object elemento) {
-        Integer valorProcurado = converterParaInteiro(elemento);
-        if (valorProcurado == null) return false;
-
-        No noAtual = noTopo;
-        while (noAtual != null) {
-            if (valorProcurado.equals(noAtual.getConteudo())) return true;
-            noAtual = noAtual.getProx();
+    public void ordenarCrescente() {
+        if (estaVazia()) {
+            System.out.println("A PILHA ESTÁ VAZIA.");
+            return;
+        }else if(noTopo.getProx() == null){
+            System.out.println("A PILHA SÓ TEM UM ELEMENTO.");
+            return;
+        }else{
+            System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
         }
-        return false;
+
+        PilhaDinamica pilhaAux = new PilhaDinamica();
+        while (!estaVazia()) {
+            Integer valorInformado = (Integer) noTopo.getConteudo();
+            noTopo = noTopo.getProx();
+            quantidadeElementos--;
+
+            No verificandoNo = pilhaAux.noTopo;
+            No noAnterior = null;
+
+            while (verificandoNo != null && valorInformado < (Integer) verificandoNo.getConteudo()) {
+                noAnterior = verificandoNo;
+                verificandoNo = verificandoNo.getProx();
+            }
+
+            No noNovo = new No(valorInformado);
+            if (noAnterior == null) {
+                noNovo.setProx(pilhaAux.noTopo);
+                pilhaAux.noTopo = noNovo;
+            } else {
+                noNovo.setProx(verificandoNo);
+                noAnterior.setProx(noNovo);
+            }
+        }
+
+        while (!pilhaAux.estaVazia()) {
+            inserirElemento(pilhaAux.noTopo.getConteudo());
+            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
+            pilhaAux.quantidadeElementos--;
+        }
     }
 
     @Override
@@ -192,11 +217,12 @@ public class PilhaDinamica implements IEstruturaDinamica {
         if (estaVazia()) {
             System.out.println("A PILHA ESTÁ VAZIA.");
             return;
+        }else if(noTopo.getProx() == null){
+            System.out.println("A PILHA SÓ TEM UM ELEMENTO.");
+            return;
         }else{
             System.out.println("PILHA ORDENADA EM ORDEM CRESCENTE.");
         }
-
-        if (noTopo == null || noTopo.getProx() == null) return;
 
         PilhaDinamica pilhaAux = new PilhaDinamica();
         while (!estaVazia()) {
@@ -230,45 +256,21 @@ public class PilhaDinamica implements IEstruturaDinamica {
     }
 
     @Override
-    public void ordenarCrescente() {
-        if (estaVazia()) {
-            System.out.println("A PILHA ESTÁ VAZIA.");
-            return;
-        }else{
-            System.out.println("PILHA ORDENADA EM ORDEM DECRESCENTE.");
+    public boolean estaVazia() {
+        return noTopo == null;
+    }
+
+    @Override
+    public boolean buscarElemento(Object elemento) {
+        Integer valorProcurado = converterParaInteiro(elemento);
+        if (valorProcurado == null) return false;
+
+        No noAtual = noTopo;
+        while (noAtual != null) {
+            if (valorProcurado.equals(noAtual.getConteudo())) return true;
+            noAtual = noAtual.getProx();
         }
-
-        if (noTopo == null || noTopo.getProx() == null) return;
-
-        PilhaDinamica pilhaAux = new PilhaDinamica();
-        while (!estaVazia()) {
-            Integer valorInformado = (Integer) noTopo.getConteudo();
-            noTopo = noTopo.getProx();
-            quantidadeElementos--;
-
-            No verificandoNo = pilhaAux.noTopo;
-            No noAnterior = null;
-
-            while (verificandoNo != null && valorInformado < (Integer) verificandoNo.getConteudo()) {
-                noAnterior = verificandoNo;
-                verificandoNo = verificandoNo.getProx();
-            }
-
-            No noNovo = new No(valorInformado);
-            if (noAnterior == null) {
-                noNovo.setProx(pilhaAux.noTopo);
-                pilhaAux.noTopo = noNovo;
-            } else {
-                noNovo.setProx(verificandoNo);
-                noAnterior.setProx(noNovo);
-            }
-        }
-
-        while (!pilhaAux.estaVazia()) {
-            inserirElemento(pilhaAux.noTopo.getConteudo());
-            pilhaAux.noTopo = pilhaAux.noTopo.getProx();
-            pilhaAux.quantidadeElementos--;
-        }
+        return false;
     }
 
     @Override
